@@ -4,8 +4,8 @@ mod mongo_repo;
 mod utils;
 
 use crate::controllers::user_controller::register_user;
-use crate::mongo_repo::mongo_connection::establish_connection;
-use crate::utils::utils::{is_api_reachable, get_collection};
+use crate::mongo_repo::utils::{establish_connection, get_collection};
+use crate::utils::utils::is_api_reachable;
 
 use mongodb::{Client, Collection, bson::Document};
 use actix_web::{App, HttpServer, web::{Data, scope}};
@@ -16,10 +16,10 @@ async fn main() -> Result<(), std::io::Error> {
    let client: Client = establish_connection().await.unwrap();
    let conn_status = match client.list_database_names(None, None).await {
       Ok(_) => "OK".to_string(),
-      Err(_) => "FAILED".to_string(),
+      Err(_) => panic!("FAILED CONNECTING TO DATABASE, ARE YOU SURE YOU HAVE THE RIGHT SERVER IP?"),
    };
 
-   println!("Connection status: {:?}", conn_status);
+   println!("Connection status: {}", conn_status);
 
    //let client: Data<Arc<Client>> = Data::new(Arc::new(client));
    let user_storage_collection: Data<Arc<Collection<Document>>> = Data::new(Arc::new(get_collection(client, String::from("userStorage"), String::from("users"))));

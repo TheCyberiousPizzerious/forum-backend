@@ -1,9 +1,11 @@
-use crate::models::message_model::MessageMessage;
+use crate::models::message_model::{MessageMessage, MessageTraits};
 use crate::models::{user_model::User, message_model::ErrorMessage}; 
 use crate::utils::utils::{to_json, bson_now};
 
 use actix_web::{delete, get, post, put, HttpResponse, web::{Data, Json}};
+use bson::to_bson;
 use mongodb::{bson::{Document, oid::ObjectId, Bson}, Collection};
+use std::f32::consts::E;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -20,24 +22,19 @@ pub async fn register_user(collection: Data<Arc<Collection<Document>>>, new_user
         server_timestamp: bson_now(), // Server timestamp
         user_timestamp: new_user.user_timestamp.to_owned(),
     };
-    // This can be made into a function!
-    let jsonized_data = to_json(&data).unwrap();
-    let bsonized_data = bson::to_bson(&jsonized_data).unwrap();
-    if let Bson::Document(document) = bsonized_data {
-        match collection.insert_one(document, None).await {
-            Ok(_) => {
-                let message = MessageMessage {message: data.user_id.to_string(),};
-                HttpResponse::Ok().json(message)
-            } 
-            Err(e) => {
-                let error = ErrorMessage {error: e.to_string(),};
-                HttpResponse::InternalServerError().json(error)
-            },
-        };
-    } else {
 
+    let json_data = to_json(&data).unwrap();
+    let bson_data = to_bson(&json_data).unwrap();
+    if let Bson::Document(document) = bson_data {
+        match collection.insert_one(document, None).await {
+            Ok(_) => HttpResponse::Ok().json(ErrorMessage::new_from(data.user_id.to_string())),
+            Err(e) => HttpResponse::InternalServerError().json(ErrorMessage::new_from(e.to_string())),
+        }
+    } else {
+        HttpResponse::InternalServerError().json(ErrorMessage::new_from("Error occured internally converting objects between types".to_string()))
     }
+    // every handeling of json to bson to document needs to be moved here
+
     //client.database("userStorage");
     // Burde kalle på en login funksjon og logge inn for brukeren
-    HttpResponse::Ok().json("")
 }
