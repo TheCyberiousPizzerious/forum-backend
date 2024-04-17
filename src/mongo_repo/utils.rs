@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use mongodb::{Client, error::Error};
+use mongodb::{Client, error::Error, Collection, bson::Document};
 use std::env;
 //use url_encoder;
 
@@ -15,4 +15,14 @@ pub async fn establish_connection() -> Result<Client, Error> {
         },
         Err(e) => Err(Error::from(e)),
     }
+}
+
+/// Returns the selected Collection in the selected Database
+/// ```no_run
+/// let collection = get_collection(client_instance, database, collection);
+/// collection.insert_one("blahblahblah");
+/// ```
+pub fn get_collection(client: Client, database: String, collection: String) -> Collection<Document> { 
+    let db = client.database(&database);
+    db.collection(&collection)
 }
