@@ -7,6 +7,7 @@ use crate::controllers::user_controller::register_user;
 use crate::mongo_repo::utils::{establish_connection, get_collection};
 use crate::utils::utils::is_api_reachable;
 
+use actix_web::{web, HttpResponse};
 use mongodb::{Client, Collection, bson::Document};
 use actix_web::{App, HttpServer, web::{Data, scope}};
 use std::sync::Arc;
@@ -29,7 +30,7 @@ async fn main() -> Result<(), std::io::Error> {
          .app_data(user_storage_collection.clone())
          .service(
             scope("/test")
-               .service(is_api_reachable)
+               .service(is_api_reachable) //ping-server
          .service(
             scope("/api")
               .service(register_user)

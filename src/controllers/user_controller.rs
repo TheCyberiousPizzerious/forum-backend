@@ -5,7 +5,6 @@ use crate::utils::utils::{to_json, bson_now};
 use actix_web::{delete, get, post, put, HttpResponse, web::{Data, Json}};
 use bson::to_bson;
 use mongodb::{bson::{Document, oid::ObjectId, Bson}, Collection};
-use std::f32::consts::E;
 use std::sync::Arc;
 use uuid::Uuid;
 

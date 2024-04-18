@@ -5,7 +5,7 @@ use serde_json::to_string;
 use std::time::SystemTime;
 
 /// Test the availability of the server
-#[get("/ping_server")]
+#[get("/ping-server")]
 pub async fn is_api_reachable() -> impl Responder {
  HttpResponse::Ok().json("recieved your call!")
 }
