@@ -4,9 +4,15 @@ use std::str::FromStr;
 
 #[get("/requestUserid/{id}")]
 pub async fn search_uuid(path: web::Path<String>) -> HttpResponse {
-    let requested_uuid =  match Uuid::from_str(&path.into_inner()) {
+
+    let requested_uuid = match Uuid::from_str(&path.into_inner()) {
         Ok(val) => val,
-        Err(e) => e, // hva skjer her?
+        Err(e) => {
+            eprintln!("Failed to parse requested id: {}", e);
+            Uuid::nil()
+        },
     };
+    
+
     HttpResponse::ImATeapot().body("")
 }
