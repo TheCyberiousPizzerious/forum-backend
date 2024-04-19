@@ -12,7 +12,6 @@ pub async fn search_uuid(path: web::Path<String>) -> HttpResponse {
             Uuid::nil()
         },
     };
-    
 
     HttpResponse::ImATeapot().body("")
 }
