@@ -1,6 +1,10 @@
-use actix_web::{get, web, HttpResponse};
-use uuid::Uuid;
-use std::str::FromStr;
+use crate::models::user_model::User;
+
+use actix_web::{
+    get, web, HttpResponse,
+    web::Data};
+use mongodb::{bson::doc, options::FindOneOptions, Client};
+use std::sync::Arc;
 
 #[get("/requestUserid/{id}")]
 pub async fn search_uuid(path: web::Path<String>) -> HttpResponse {
@@ -13,5 +17,5 @@ pub async fn search_uuid(path: web::Path<String>) -> HttpResponse {
         },
     };
 
-    HttpResponse::ImATeapot().body("Temporary response, if you see this contact site administrators")
+    HttpResponse::ImATeapot().body("")
 }

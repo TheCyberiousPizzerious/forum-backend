@@ -3,12 +3,11 @@ mod models;
 mod mongo_repo;
 mod utils;
 
-use crate::controllers::user_controller::register_user;
-use crate::mongo_repo::utils::{establish_connection, get_collection};
-use crate::utils::utils::is_api_reachable;
+use crate::controllers::user_controller::register;
+use crate::mongo_repo::utils::establish_connection;
+use crate::utils::utils::{is_api_reachable, grab_info, send_data};
 
-use actix_web::{web, HttpResponse};
-use mongodb::{Client, Collection, bson::Document};
+use mongodb::Client;
 use actix_web::{App, HttpServer, web::{Data, scope}};
 use std::sync::Arc;
 
@@ -22,18 +21,20 @@ async fn main() -> Result<(), std::io::Error> {
 
    println!("Connection status: {}", conn_status);
 
-   //let client: Data<Arc<Client>> = Data::new(Arc::new(client));
-   let user_storage_collection: Data<Arc<Collection<Document>>> = Data::new(Arc::new(get_collection(client, String::from("userStorage"), String::from("users"))));
+   let client: Data<Arc<Client>> = Data::new(Arc::new(client));
+   //let user_storage_collection: Data<Arc<Collection<Document>>> = Data::new(Arc::new(get_collection(client, String::from("userStorage"), String::from("users"))));
    println!("we are past storage definition");
    HttpServer::new(move || {
       App::new()
-         .app_data(user_storage_collection.clone())
+         .app_data(client.clone())
          .service(
             scope("/test")
                .service(is_api_reachable) //ping-server
+               .service(grab_info)
+               .service(send_data)
          .service(
             scope("/api")
-              .service(register_user)
+              .service(register)
          )
             // api
                //requestData

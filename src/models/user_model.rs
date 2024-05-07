@@ -7,6 +7,7 @@ pub struct User {
     pub _id: ObjectId,
     pub user_id: Uuid,
     pub admin: bool,
+    pub banned: bool,
     pub username: String,
     pub email: String,
     pub passwordhash: String,

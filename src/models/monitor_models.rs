@@ -1,20 +1,27 @@
-use mongodb::bson::oid::ObjectId;
+use mongodb::bson::{oid::ObjectId, DateTime};
 use serde::{Serialize, Deserialize};
+use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct LoginMonitoring {
-    pub oid: Option<ObjectId>,
-    pub monitor_id: String,
-    pub user_id: String,
+pub struct RegisterLoginLog {
+    pub _id: ObjectId,
+    pub monitor_id: Uuid,
+    pub user_id: Uuid,
     pub address: String,
-    pub timestamp: String,
+    pub timestamp: DateTime,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct RegisterMonitoring {
-    pub oid: Option<ObjectId>,
-    pub monitor_id: String,
-    pub user_id: String,
+pub struct RequestLog {
+    pub _id: ObjectId,
+    pub monitor_id: Uuid,
+    pub user_requesting: Uuid,
     pub address: String,
-    pub timestamp: String,
+    pub logs_requested: String,
+    pub timestamp: DateTime,
+}
+
+pub enum LogTypes {
+    loginLogs,
+    registerLogs,
 }
