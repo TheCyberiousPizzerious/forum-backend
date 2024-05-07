@@ -13,5 +13,5 @@ pub async fn search_uuid(path: web::Path<String>) -> HttpResponse {
         },
     };
 
-    HttpResponse::ImATeapot().body("")
+    HttpResponse::ImATeapot().body("Temporary response, if you see this contact site administrators")
 }
