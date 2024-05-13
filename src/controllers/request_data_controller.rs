@@ -40,8 +40,12 @@ pub async fn get_all_users(client: Data<Arc<Client>>) -> HttpResponse {
             match result {
                 Ok(document) => {
                     println!("{:?}", document);
+                    HttpResponse::Ok().json(document);
                 }
-                _ => (),
+                Err(e) => {
+                    eprintln!("There was an error: {}", e.to_string());
+                    HttpResponse::InternalServerError().json(ErrorMessage::new_from("There was an error".to_string()));
+                },
             }
         }
     HttpResponse::Ok().json(MessageMessage::new_from("ok!".to_string()))

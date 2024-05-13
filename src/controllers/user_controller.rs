@@ -7,7 +7,7 @@ use crate::utils::utils::{
     bson_now, generate_bson_uuid,
 };
 
-use actix_web::{delete, get, post, put, HttpResponse, web::{Data, Json}, HttpRequest};
+use actix_web::{delete, post, put, HttpResponse, web::{Data, Json}, HttpRequest};
 use bson::to_bson;
 use mongodb::{bson::{oid::ObjectId, Bson, doc}, Client};
 

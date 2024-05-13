@@ -43,6 +43,7 @@ async fn main() -> Result<(), std::io::Error> {
               .service(is_api_reachable)
               .service(register)
               .service(search_uuid) // Looks for a user based on uuid, name is requestUserid
+              .service(get_all_users)
          )
             // api
                //requestData
