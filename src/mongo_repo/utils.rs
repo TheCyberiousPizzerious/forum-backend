@@ -10,7 +10,7 @@ pub async fn establish_connection() -> Result<Client, Error> {
     println!("Environment variable: {}", mongouri_env);
     match Client::with_uri_str(mongouri_env).await {
         Ok(client) => {
-            println!("Client: {:?}", client);
+            println!("Client: OK");
             Ok(client)
         },
         Err(e) => Err(Error::from(e)),
@@ -22,7 +22,7 @@ pub async fn establish_connection() -> Result<Client, Error> {
 /// let collection = get_collection(client_instance, database, collection);
 /// collection.insert_one("blahblahblah");
 /// ```
-pub fn get_collection(client: Client, database: String, collection: String) -> Collection<Document> { 
+pub fn _get_collection(client: Client, database: String, collection: String) -> Collection<Document> { 
     let db = client.database(&database);
     db.collection(&collection)
 }

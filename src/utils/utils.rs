@@ -1,7 +1,9 @@
-use actix_web::{cookie::time::Date, get, post, rt::System, web::Json, HttpRequest, HttpResponse, Responder};
-use mongodb::{Collection, Client, bson::{Bson, to_bson, Document, DateTime, ser::Error as BsonError}};
+use actix_web::{get, post, web::Json, HttpRequest, HttpResponse, Responder};
+use mongodb::bson::{Bson, DateTime};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
+use uuid::Uuid;
+
 use std::time::SystemTime;
 
 /// Test the availability of the server
@@ -23,7 +25,7 @@ pub async fn is_api_reachable() -> impl Responder {
 /// println!("result: {}", to_json(instance));
 /// // result {"name":"xx_epigamer_xx"}
 /// ```
-pub fn to_json<T: Serialize>(data: T) -> Result<String, serde_json::Error> {
+pub fn _to_json<T: Serialize>(data: T) -> Result<String, serde_json::Error> {
     match to_string(&data) {
         Ok(val) => Ok(val),
         Err(e) => Err(e),
@@ -62,7 +64,7 @@ pub async fn grab_info(info: HttpRequest) -> HttpResponse {
     //println!("conn_data:    {:?}", info.conn_data());
     println!("conn info:    {:?}", info.connection_info());
     if let Some(ip_string) = info.connection_info().peer_addr() {
-        println!("{ip_string}");
+        println!("peer address: {ip_string}");
     };
     //connection_info
     //realip_remote_addr
@@ -82,4 +84,12 @@ pub async fn send_data(thing: Json<Data>, req: HttpRequest) -> HttpResponse {
     println!("call to {}", req.uri());
     println!("got some data: {}", thing.data);
     HttpResponse::Ok().body("ok!")
+}
+
+pub fn generate_bson_uuid() -> Bson {
+    let uuid = Uuid::new_v4();
+    Bson::Binary(mongodb::bson::Binary {
+        subtype: mongodb::bson::spec::BinarySubtype::Uuid,
+        bytes: uuid.as_bytes().to_vec(),
+    })
 }

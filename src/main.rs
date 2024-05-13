@@ -3,7 +3,12 @@ mod models;
 mod mongo_repo;
 mod utils;
 
-use crate::controllers::user_controller::register;
+use crate::controllers::{
+   request_data_controller::{
+      search_uuid, get_all_users
+   },
+   user_controller::register,
+};
 use crate::mongo_repo::utils::establish_connection;
 use crate::utils::utils::{is_api_reachable, grab_info, send_data};
 
@@ -32,16 +37,18 @@ async fn main() -> Result<(), std::io::Error> {
                .service(is_api_reachable) //ping-server
                .service(grab_info)
                .service(send_data)
+            )
          .service(
             scope("/api")
+              .service(is_api_reachable)
               .service(register)
+              .service(search_uuid) // Looks for a user based on uuid, name is requestUserid
          )
             // api
                //requestData
                //requestLogs
                //userHandeler
                //utilityHandeler
-         )
    })
    .bind("127.0.0.1:7175")?
    .run()

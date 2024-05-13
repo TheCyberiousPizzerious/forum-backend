@@ -1,25 +1,50 @@
-use crate::models::user_model::User;
+use crate::models::{message_model::ErrorMessage, user_model::User};
+
+use crate::models::message_model::{MessageMessage, MessageTraits};
 
 use actix_web::{
-    get, web, HttpResponse,
-    web::Data};
+    get, web::{self, Data}, HttpResponse};
 use mongodb::{bson::doc, options::FindOneOptions, Client};
+use futures_util::StreamExt;
 use std::sync::Arc;
 use uuid::Uuid;
-use std::str::FromStr;
 
-#[get("/requestUserid/{id}")]
-pub async fn search_uuid(path: web::Path<String>) -> HttpResponse {
-
-    let requested_uuid = match Uuid::from_str(&path.into_inner()) {
+#[get("/requestUserId/{id}")]
+pub async fn search_uuid(client: Data<Arc<Client>>, id: web::Path<String>) -> HttpResponse {
+    println!("Someone requested a user");
+    let requested_uuid = match Uuid::parse_str(&id) {
         Ok(val) => val,
         Err(e) => {
             eprintln!("Failed to parse requested id: {}", e);
             Uuid::nil()
         },
     };
+    if requested_uuid.is_nil() {
+        HttpResponse::BadRequest().json(ErrorMessage::new_from("The user id requested is invalid".to_string()))
+    } else {
+        let filter = doc! { "user_id": requested_uuid.to_string() };
+        let find_options = FindOneOptions::builder().build();
+        let result = client.database("userStorage").collection::<User>("users").find_one(filter, find_options).await;
+        match result {
+            Ok(val) => HttpResponse::Ok().json(val),
+            Err(e) => HttpResponse::NotFound().json(ErrorMessage::new_from(e.to_string()))
+        }
+    }
+}
 
-    HttpResponse::ImATeapot().body("")
+#[get("/getAllUsers")]
+pub async fn get_all_users(client: Data<Arc<Client>>) -> HttpResponse {
+    println!("Someone wants all the users of the forum");
+    let mut cursor: mongodb::Cursor<_> = client.database("userStorage").collection::<User>("users").find(None, None).await.unwrap();
+        while let Some(result) = cursor.next().await {
+            match result {
+                Ok(document) => {
+                    println!("{:?}", document);
+                }
+                _ => (),
+            }
+        }
+    HttpResponse::Ok().json(MessageMessage::new_from("ok!".to_string()))
 }
 
 /*
