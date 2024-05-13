@@ -2,6 +2,7 @@ use crate::models::{message_model::ErrorMessage, user_model::User};
 
 use crate::models::message_model::{MessageMessage, MessageTraits};
 
+use actix_web::http::header::Allow;
 use actix_web::{
     get, web::{self, Data}, HttpResponse};
 use mongodb::{bson::doc, options::FindOneOptions, Client};
@@ -35,20 +36,20 @@ pub async fn search_uuid(client: Data<Arc<Client>>, id: web::Path<String>) -> Ht
 #[get("/getAllUsers")]
 pub async fn get_all_users(client: Data<Arc<Client>>) -> HttpResponse {
     println!("Someone wants all the users of the forum");
+    let mut jsonVec: Vec<User> = vec![];
     let mut cursor: mongodb::Cursor<_> = client.database("userStorage").collection::<User>("users").find(None, None).await.unwrap();
-        while let Some(result) = cursor.next().await {
-            match result {
-                Ok(document) => {
-                    println!("{:?}", document);
-                    HttpResponse::Ok().json(document);
-                }
-                Err(e) => {
-                    eprintln!("There was an error: {}", e.to_string());
-                    HttpResponse::InternalServerError().json(ErrorMessage::new_from("There was an error".to_string()));
-                },
+    while let Some(result) = cursor.next().await {
+        match result {
+            Ok(document) => {
+                println!("{:#?}", document);
+                jsonVec.push(document);
             }
+            Err(e) => {
+                eprintln!("There was an error: {}", e.to_string());
+            },
         }
-    HttpResponse::Ok().json(MessageMessage::new_from("ok!".to_string()))
+    }
+    HttpResponse::Ok().json(jsonVec)
 }
 
 /*
