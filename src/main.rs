@@ -13,6 +13,7 @@ use crate::mongo_repo::utils::establish_connection;
 use crate::utils::utils::{is_api_reachable, grab_info, send_data};
 
 use mongodb::Client;
+use actix_cors::Cors;
 use actix_web::{App, HttpServer, web::{Data, scope}};
 use std::sync::Arc;
 
@@ -29,8 +30,17 @@ async fn main() -> Result<(), std::io::Error> {
    let client: Data<Arc<Client>> = Data::new(Arc::new(client));
    //let user_storage_collection: Data<Arc<Collection<Document>>> = Data::new(Arc::new(get_collection(client, String::from("userStorage"), String::from("users"))));
    println!("we are past storage definition");
+   
    HttpServer::new(move || {
+      let cors = Cors::default()
+      .allow_any_origin()
+      .allow_any_method()
+      .allow_any_header()
+      .expose_any_header()
+      .max_age(3600);
+
       App::new()
+         .wrap(cors)
          .app_data(client.clone())
          .service(
             scope("/test")
