@@ -4,10 +4,14 @@ mod mongo_repo;
 mod utils;
 
 use crate::controllers::{
-   request_data_controller::{
-      search_uuid, get_all_users
+   post_controller::{
+      create_thread, get_threads_board_id
    },
-   user_controller::register,
+   request_data_controller::{
+      get_all_users, is_admin_username, make_admin_username, search_uuid
+   }, user_controller::{
+      login, register
+   }
 };
 use crate::mongo_repo::utils::establish_connection;
 use crate::utils::utils::{is_api_reachable, grab_info, send_data};
@@ -54,6 +58,11 @@ async fn main() -> Result<(), std::io::Error> {
               .service(register)
               .service(search_uuid) // Looks for a user based on uuid, name is requestUserid
               .service(get_all_users)
+              .service(is_admin_username)
+              .service(make_admin_username)
+              .service(login)
+              .service(create_thread)
+              .service(get_threads_board_id)
          )
             // api
                //requestData
@@ -61,7 +70,7 @@ async fn main() -> Result<(), std::io::Error> {
                //userHandeler
                //utilityHandeler
    })
-   .bind("127.0.0.1:7175")?
+   .bind("0.0.0.0:7175")?
    .run()
    .await
 }

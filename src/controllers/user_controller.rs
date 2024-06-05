@@ -1,10 +1,10 @@
-use crate::models::message_model::{MessageMessage, ErrorMessage, MessageTraits};
-use crate::models::user_model::User; 
+use crate::models::message_model::{MessageMessage, ErrorMessage, MessageTraits, RegisterSending};
+use crate::models::user_model::{User, UserId}; 
 use crate::models::monitor_models::{
     RegisterLoginLog, LoginLog
 };
 use crate::utils::utils::{
-    bson_now, generate_bson_uuid,
+    b_uuid_decoding, bson_now, generate_bson_uuid
 };
 
 use actix_web::{delete, post, put, HttpResponse, web::{Data, Json}, HttpRequest};
@@ -25,7 +25,7 @@ pub async fn register(req: HttpRequest, client: Data<Arc<Client>>, sendt_data: J
 
     let user_data: User = User {
         _id: Some(ObjectId::new()),
-        user_id: Some(generate_bson_uuid()),
+        user_id: Some(UserId::Bson(generate_bson_uuid())),
         admin: Some(false),
         banned: Some(false),
         username: sendt_data.username.to_owned(),
@@ -55,7 +55,7 @@ pub async fn register(req: HttpRequest, client: Data<Arc<Client>>, sendt_data: J
                     if let Bson::Document(user_document) = bson_user {
                         match client.database("userStorage").collection("users").insert_one(user_document, None).await {
                             Ok(_) => {
-                                println!("User created, id: {}", user_data.user_id.unwrap().to_string());
+                                println!("User created, id: {}", user_data.user_id.clone().unwrap().to_string());
                                 let bson_log = to_bson(&log_data).unwrap();
                                 if let Bson::Document(log_document) = bson_log {
                                     match client.database("monitoringStorage").collection("registerLogs").insert_one(log_document, None).await {
@@ -70,7 +70,13 @@ pub async fn register(req: HttpRequest, client: Data<Arc<Client>>, sendt_data: J
                                     println!("Something is wrong with the bson data not making it a valid document");
                                     // There needs to be code here where you 
                                 };
-                                HttpResponse::Ok().json(MessageMessage::new_from("User created!".to_string()))
+                                let decoded_id = b_uuid_decoding(&user_data.user_id.unwrap());
+                                let sendingdata = RegisterSending {
+                                    username: user_data.username,
+                                    admin: user_data.admin.unwrap(),
+                                    user_id: decoded_id,
+                                };
+                                HttpResponse::Ok().json(sendingdata)
                             }, // Needs to send another message
                             Err(e) => {
                                 println!("There was an issue creating the user, error: {}", e.to_string());
@@ -102,14 +108,14 @@ pub async fn login(req: HttpRequest, client: Data<Arc<Client>>, sendt_data: Json
     let mut log_data: LoginLog = LoginLog {
         _id: ObjectId::new(),
         monitor_id: generate_bson_uuid(),
-        user_id: Bson::Null, // neds to be changed later after the blahblahblah
+        user_id: UserId::Bson(Bson::Null), // neds to be changed later after the blahblahblah
         address: req.connection_info().peer_addr().unwrap().to_string(),
         is_succesfull: false,
         timestamp: bson_now(),
     };
     match client.database("userStorage").collection::<User>("users").find_one(doc! {"username": &sendt_data.username}, None).await {
         Ok(Some(user_document)) => {
-            log_data.user_id = user_document.user_id.unwrap();
+            log_data.user_id = user_document.user_id.clone().unwrap();
             match client.database("userStorage").collection::<User>("users").find_one(doc! {"username": &sendt_data.username, "passwordhash": &sendt_data.passwordhash}, None).await {
                 Ok(Some(_)) => {
                     println!("User logged in");
@@ -128,7 +134,13 @@ pub async fn login(req: HttpRequest, client: Data<Arc<Client>>, sendt_data: Json
                         println!("Something is wrong with the bson data not making it a valid document");
                         // There needs to be code here where you 
                     };
-                    HttpResponse::Ok().json(MessageMessage::new_from("Logging in!".to_string()))
+                    let decoded_uuid = b_uuid_decoding(&user_document.user_id.unwrap());
+                    let sendingdata = RegisterSending {
+                        username: user_document.username,
+                        admin: user_document.admin.unwrap(),
+                        user_id: decoded_uuid,
+                    };
+                    HttpResponse::Ok().json(sendingdata)
                 },
                 Ok(None) => {
                     println!("There is no user with this username or password");

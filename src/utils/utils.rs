@@ -1,10 +1,13 @@
 use actix_web::{get, post, web::Json, HttpRequest, HttpResponse, Responder};
+use bson::spec::BinarySubtype;
 use mongodb::bson::{Bson, DateTime};
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use uuid::Uuid;
 
 use std::time::SystemTime;
+
+use crate::models::user_model::UserId;
 
 /// Test the availability of the server
 #[get("/ping-server")]
@@ -92,4 +95,27 @@ pub fn generate_bson_uuid() -> Bson {
         subtype: mongodb::bson::spec::BinarySubtype::Uuid,
         bytes: uuid.as_bytes().to_vec(),
     })
+}
+
+pub fn b_uuid_decoding(binary_id: &UserId) -> Uuid {
+    match binary_id {
+        UserId::Bson(bson::Bson::Binary(bson::Binary { subtype, bytes })) => {
+            if *subtype == BinarySubtype::Uuid {
+                match Uuid::from_slice(&bytes) {
+                    Ok(uuid) => uuid,
+                    Err(e) => {
+                        eprintln!("Failed to decode binary uuid, error: {}", e);
+                        Uuid::nil()
+                    },
+                }
+            } else {
+                println!("The subtype is not binary");
+                Uuid::nil()
+            }
+        },
+        _ => {
+            eprintln!("user_id is not Bson::Binary");
+            Uuid::nil()
+        },
+    }
 }

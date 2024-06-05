@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.7.0"
 actix-web = "4.5.1"
+base64 = "0.22.1"
 bson = { verison="2.10.0", features = ["chrono"] }
 chrono = "0.4.37"
 dotenv = "0.15.0"

@@ -1,3 +1,5 @@
+use crate::models::user_model::UserId;
+
 use mongodb::bson::{oid::ObjectId, DateTime, Bson};
 use serde::{Serialize, Deserialize};
 
@@ -5,7 +7,7 @@ use serde::{Serialize, Deserialize};
 pub struct RegisterLoginLog {
     pub _id: ObjectId,
     pub monitor_id: Bson,
-    pub user_id: Bson,
+    pub user_id: UserId,
     pub address: String,
     pub timestamp: DateTime,
 }
@@ -24,7 +26,7 @@ pub struct RequestLog {
 pub struct LoginLog {
     pub _id: ObjectId,
     pub monitor_id: Bson,
-    pub user_id: Bson,
+    pub user_id: UserId,
     pub address: String,
     pub is_succesfull: bool,
     pub timestamp: DateTime,
