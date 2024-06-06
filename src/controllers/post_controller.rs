@@ -101,7 +101,7 @@ pub async fn get_threads_board_id(client: Data<Arc<Client>>, board_id: web::Path
 
 #[get("/getThreadId/{thread_id}")]
 pub async fn get_thread_id(client: Data<Arc<Client>>, thread_id: web::Path<String>) -> HttpResponse {
-    println!("Someone wants to know if a user is admin");
+    println!("Someone wants to get a thread by uuid");
     println!("The Thread: {}", thread_id);
     let filter = doc! { "thread_id": thread_id.to_string() };
     let find_options = FindOneOptions::builder().build();
@@ -109,13 +109,16 @@ pub async fn get_thread_id(client: Data<Arc<Client>>, thread_id: web::Path<Strin
     match result {
         Ok(val) => {
             match val {
-                Some(user) => {
-                    HttpResponse::Ok().json(user)
+                Some(thread) => {
+                    HttpResponse::Ok().json(thread)
                 },
                 None => HttpResponse::NotFound().json(MessageMessage::new_from(String::from("no user with that username"))),
             }
         },
-        Err(e) => HttpResponse::NotFound().json(ErrorMessage::new_from(e.to_string()))
+        Err(e) => {
+            println!("We are searching weirdly");
+            HttpResponse::NotFound().json(ErrorMessage::new_from(e.to_string()))
+        },
     }
 }
 
@@ -132,7 +135,7 @@ pub async fn get_posts_thread_id(client: Data<Arc<Client>>, thread_id: web::Path
             Ok(mut document) => {
                 let decoded_thread_id = b_uuid_decoding(&document.thread_id.unwrap());
                 document.thread_id = Some(UserId::Uuid(decoded_thread_id));
-                println!("thread id: {}", &document.thread_id.unwrap());
+                println!("thread id: {}", &document.thread_id.clone().unwrap());
                 jsonvec.push(document);
             }
             Err(e) => {

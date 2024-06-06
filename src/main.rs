@@ -5,7 +5,7 @@ mod utils;
 
 use crate::controllers::{
    post_controller::{
-      create_thread, get_threads_board_id
+      create_thread, get_thread_id, get_threads_board_id
    },
    request_data_controller::{
       get_all_users, is_admin_username, make_admin_username, search_uuid
@@ -63,6 +63,7 @@ async fn main() -> Result<(), std::io::Error> {
               .service(login)
               .service(create_thread)
               .service(get_threads_board_id)
+              .service(get_thread_id)
          )
             // api
                //requestData
